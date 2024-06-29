@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scrabble Game</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #rack {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            background-image: url('scrabble-tile-holder-406774_640.png');
+            background-size: cover;
+            height: 70px;
+            padding: 10px;
+        }
+        #board {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            background-image: url('Scrabble_Board_OneLine.png');
+            background-size: cover;
+            height: 70px;
+            width: 700px;
+        }
+        .tile {
+            width: 50px;
+            height: 50px;
+            margin: 2px;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 50px;
+            font-size: 24px;
+            background-size: cover;
+            position: relative;
+        }
+        .board-tile {
+            width: 50px;
+            height: 50px;
+            margin: 2px;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 1.2;
+            font-size: 10px;
+            background-size: cover;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .double-letter { background-color: lightblue; }
+        .double-word { background-color: lightpink; }
+        #score {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: red;
+        }
+        #reset {
+            margin-top: 20px;
+            font-size: 20px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scrabble Game</h1>
+    <div id="rack"></div>
+    <div id="board"></div>
+    <div id="score">Score: 0</div>
+    <div id="message"></div>
+    <button id="reset">Reset Game</button>
+
+    <script src="Scrabble_Pieces_AssociativeArray_Jesse.js"></script>
+    <script>
+        $(document).ready(function() {
+            var tiles = [
+                "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", 
+                "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+            ];
+
+            function createRack() {
+                $("#rack").empty();
+                for (var i = 0; i < 7; i++) {
+                    var letter = tiles[Math.floor(Math.random() * tiles.length)];
+                    var tile = $("<div>").addClass("tile").attr("data-letter", letter);
+                    tile.css("background-image", "url('Scrabble_Tiles/Scrabble_Tile_" + letter + ".jpg')");
+                    tile.draggable({ revert: "invalid" });
+                    $("#rack").append(tile);
+                }
+                $("#rack").droppable({
+                    accept: ".tile",
+                    drop: function(event, ui) {
+                        $(this).append(ui.draggable.css({
+                            top: 0,
+                            left: 0,
+                            position: "relative"
+                        }));
+                        ui.draggable.draggable("enable");
+                        calculateScore();
+                    }
+                });
+            }
+
+            function createBoard() {
+                $("#board").empty();
+                var boardRow = [
+                    "", "", "double-word", "", "", "double-letter", "", "", "double-letter", "", "", "double-word", "", ""
+                ];
+                for (var i = 0; i < boardRow.length; i++) {
+                    var boardTile = $("<div>").addClass("board-tile");
+                    if (boardRow[i]) {
+                        boardTile.addClass(boardRow[i]);
+                        if (boardRow[i] === "double-letter") {
+                            boardTile.text("Double Letter Score");
+                        } else if (boardRow[i] === "double-word") {
+                            boardTile.text("Double Word Score");
+                        }
+                    }
+                    boardTile.droppable({
+                        accept: ".tile",
+                        drop: function(event, ui) {
+                            $(this).empty();
+                            $(this).append(ui.draggable.css({
+                                top: 0,
+                                left: 0,
+                                position: "relative"
+                            }));
+                            ui.draggable.draggable("enable");
+                            calculateScore();
+                        }
+                    });
+                    $("#board").append(boardTile);
+                }
+            }
+
+            function calculateScore() {
+                var score = 0;
+                var doubleWordMultiplier = 1;
+                $("#board .tile").each(function() {
+                    var letter = $(this).attr("data-letter");
+                    var tileValue = ScrabbleTiles[letter]["value"];
+                    if ($(this).parent().hasClass("double-letter")) {
+                        tileValue *= 2;
+                    } else if ($(this).parent().hasClass("double-word")) {
+                        doubleWordMultiplier *= 2;
+                    }
+                    score += tileValue;
+                });
+                score *= doubleWordMultiplier;
+                $("#score").text("Score: " + score);
+            }
+
+            $("#reset").click(function() {
+                createRack();
+                createBoard();
+                $("#score").text("Score: 0");
+                $("#message").text("");
+            });
+
+            createRack();
+            createBoard();
+        });
+    </script>
+</body>
+</html>
