@@ -2,6 +2,7 @@
 
 
 URL to GitHub Application: https://trayshiwala.github.io/Scrabble-Game/
+
 URL to GitHub Repository: https://github.com/trayshiwala/Scrabble-Game
 
 
